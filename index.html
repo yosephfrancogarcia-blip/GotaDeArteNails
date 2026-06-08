@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gota de Arte Nails</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="app">
+
+        <section class="hero">
+            <div class="logo">💅</div>
+            <div>
+                <h1>Gota de Arte Nails</h1>
+                <p>Agenda, clientes y recordatorios</p>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <span>Total citas</span>
+                <strong id="totalCitas">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Total terminado</span>
+                <strong id="totalGeneral">$0</strong>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-title">
+                <h2 id="tituloFormulario">Registrar cita</h2>
+                <span>Agenda</span>
+            </div>
+
+            <label>Nombre del cliente</label>
+            <input type="text" id="cliente" placeholder="Ej: María Pérez">
+
+            <label>Teléfono / WhatsApp</label>
+            <input type="text" id="telefono" placeholder="Ej: 3001234567">
+
+            <label>Servicio</label>
+            <select id="servicio">
+                <option value="">Seleccione un servicio</option>
+                <option value="Manicura tradicional">Manicura tradicional</option>
+                <option value="Pedicura">Pedicura</option>
+                <option value="Uñas acrílicas">Uñas acrílicas</option>
+                <option value="Uñas semipermanentes">Uñas semipermanentes</option>
+                <option value="Diseño artístico">Diseño artístico</option>
+                <option value="Mantenimiento de uñas">Mantenimiento de uñas</option>
+                <option value="Retiro de esmalte">Retiro de esmalte</option>
+                <option value="Baño de acrílico">Baño de acrílico</option>
+            </select>
+
+            <label>Fecha</label>
+            <input type="date" id="fecha">
+
+            <div class="row">
+                <div>
+                    <label>Hora inicio</label>
+                    <input type="time" id="horaInicio">
+                </div>
+
+                <div>
+                    <label>Hora fin del servicio</label>
+                    <input type="time" id="horaFin">
+                </div>
+            </div>
+
+            <label>Valor del servicio</label>
+            <input type="number" id="precio" placeholder="Ej: 50000">
+
+            <label>Estado</label>
+            <select id="estado">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Confirmada">Confirmada</option>
+                <option value="Terminada">Terminada</option>
+                <option value="Cancelada">Cancelada</option>
+            </select>
+
+            <button class="btn-primary" id="btnGuardar" onclick="guardarCita()">
+                Guardar cita
+            </button>
+
+            <button class="btn-cancelar" id="btnCancelar" onclick="cancelarEdicion()" style="display: none;">
+                Cancelar edición
+            </button>
+        </section>
+
+        <section class="card">
+            <div class="section-title">
+                <h2>Calendario de citas</h2>
+                <span>Disponibilidad</span>
+            </div>
+
+            <label>Seleccionar fecha</label>
+            <input type="date" id="fechaCalendario" onchange="mostrarCalendario()">
+
+            <div id="resultadoCalendario" class="calendario-box">
+                <p>Selecciona una fecha para ver las citas agendadas.</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-title">
+                <h2>Historial de todas las citas</h2>
+                <span>Todas</span>
+            </div>
+
+            <input 
+                type="text" 
+                id="buscador" 
+                placeholder="Buscar por cliente, servicio, fecha o estado..." 
+                onkeyup="mostrarCitas()"
+            >
+
+            <label>Filtrar por estado</label>
+            <select id="filtroEstado" onchange="mostrarCitas()">
+                <option value="Todas">Todas las citas</option>
+                <option value="Pendiente">Pendientes</option>
+                <option value="Confirmada">Confirmadas</option>
+                <option value="Terminada">Terminadas</option>
+                <option value="Cancelada">Canceladas</option>
+            </select>
+
+            <div id="listaCitas"></div>
+
+            <button class="btn-clear" onclick="eliminarTodasLasCitas()">
+                Limpiar historial completo
+            </button>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

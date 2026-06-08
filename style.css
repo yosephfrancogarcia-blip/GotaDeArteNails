@@ -1,0 +1,306 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fce7f3;
+    color: #2b2b2b;
+}
+
+.app {
+    max-width: 520px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 18px;
+    background: linear-gradient(180deg, #fff7fb, #ffe4f1);
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #c2185b, #e91e63);
+    color: white;
+    padding: 22px;
+    border-radius: 28px;
+    box-shadow: 0 10px 24px rgba(194, 24, 91, 0.35);
+    margin-bottom: 18px;
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+    background: white;
+    color: #c2185b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+
+.hero h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.hero p {
+    margin: 4px 0 0;
+    opacity: 0.95;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+    border: 1px solid #f8bdd7;
+}
+
+.stat-card span {
+    display: block;
+    color: #777;
+    font-size: 14px;
+}
+
+.stat-card strong {
+    display: block;
+    margin-top: 6px;
+    color: #c2185b;
+    font-size: 22px;
+}
+
+.card {
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.11);
+    border: 1px solid #f7c6dc;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.section-title h2 {
+    color: #c2185b;
+    margin: 0;
+    font-size: 24px;
+}
+
+.section-title span {
+    font-size: 13px;
+    background: #ffe1ef;
+    color: #c2185b;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 700;
+    color: #333;
+}
+
+input, select {
+    width: 100%;
+    padding: 13px;
+    margin-top: 6px;
+    border: 1px solid #e7b5ca;
+    border-radius: 14px;
+    font-size: 15px;
+    outline: none;
+    background: white;
+}
+
+input:focus, select:focus {
+    border-color: #c2185b;
+    box-shadow: 0 0 0 3px rgba(194, 24, 91, 0.12);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+button {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #c2185b, #e91e63);
+    color: white;
+}
+
+.btn-whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.btn-editar {
+    background: #0d6efd;
+    color: white;
+}
+
+.btn-eliminar {
+    background: #e63946;
+    color: white;
+}
+
+.btn-clear {
+    background: #444;
+    color: white;
+}
+
+.btn-cancelar {
+    background: #6c757d;
+    color: white;
+}
+
+.cita {
+    background: #fff7fb;
+    border: 1px solid #f0abc9;
+    border-left: 6px solid #c2185b;
+    padding: 15px;
+    border-radius: 18px;
+    margin-top: 14px;
+}
+
+.cita-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cita-header h3 {
+    margin: 0;
+    color: #c2185b;
+}
+
+.badge {
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.Pendiente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.Confirmada {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.Terminada {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.Cancelada {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.cita p {
+    margin: 7px 0;
+    font-size: 15px;
+}
+
+.empty {
+    text-align: center;
+    padding: 18px;
+    color: #777;
+}
+
+.calendario-box {
+    margin-top: 15px;
+    background: #fff7fb;
+    border: 1px solid #f0abc9;
+    border-radius: 18px;
+    padding: 15px;
+}
+
+.disponible {
+    background: #d1e7dd;
+    color: #0f5132;
+    padding: 12px;
+    border-radius: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.ocupada {
+    background: #f8d7da;
+    color: #842029;
+    padding: 12px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+}
+
+.ocupada strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.horario-libre {
+    background: #e7f1ff;
+    color: #084298;
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+.recordatorio-info {
+    background: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+@media (max-width: 430px) {
+    .row {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 23px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}

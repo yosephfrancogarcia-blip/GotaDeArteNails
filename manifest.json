@@ -1,0 +1,17 @@
+{
+    "name": "Gota de Arte Nails",
+    "short_name": "Arte Nails",
+    "description": "App web para gestión de citas y recordatorios de Gota de Arte Nails.",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#ffe4f1",
+    "theme_color": "#c2185b",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+        }
+    ]
+}

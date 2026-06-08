@@ -160,6 +160,11 @@ button:hover {
     color: white;
 }
 
+.btn-hoy {
+    background: linear-gradient(135deg, #8e24aa, #d63384);
+    color: white;
+}
+
 .btn-whatsapp {
     background: #25D366;
     color: white;
@@ -289,6 +294,19 @@ button:hover {
     border-radius: 12px;
     margin-top: 10px;
     font-weight: bold;
+}
+
+.hoy-card {
+    background: #fff7fb;
+    border-left: 6px solid #8e24aa;
+    border-radius: 16px;
+    padding: 12px;
+    margin-top: 10px;
+    border: 1px solid #f0abc9;
+}
+
+.hoy-card strong {
+    color: #c2185b;
 }
 
 @media (max-width: 430px) {

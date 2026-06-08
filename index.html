@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gota de Arte Nails</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg">
+    <meta name="theme-color" content="#c2185b">
+    <meta name="apple-mobile-web-app-title" content="Gota de Arte Nails">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
 
@@ -88,6 +96,21 @@
             <button class="btn-cancelar" id="btnCancelar" onclick="cancelarEdicion()" style="display: none;">
                 Cancelar edición
             </button>
+        </section>
+
+        <section class="card">
+            <div class="section-title">
+                <h2>Citas de hoy</h2>
+                <span>Hoy</span>
+            </div>
+
+            <button class="btn-hoy" onclick="mostrarCitasHoy()">
+                Ver citas de hoy
+            </button>
+
+            <div id="listaCitasHoy" class="calendario-box">
+                <p>Presiona el botón para ver las citas de hoy.</p>
+            </div>
         </section>
 
         <section class="card">

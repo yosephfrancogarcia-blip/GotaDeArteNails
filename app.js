@@ -253,6 +253,55 @@ function claseEstado(estado) {
     return estado;
 }
 
+function obtenerFechaHoy() {
+    let hoy = new Date();
+    let anio = hoy.getFullYear();
+    let mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    let dia = String(hoy.getDate()).padStart(2, "0");
+
+    return `${anio}-${mes}-${dia}`;
+}
+
+function mostrarCitasHoy() {
+    actualizarEstadosAutomaticos();
+
+    let contenedor = document.getElementById("listaCitasHoy");
+    let fechaHoy = obtenerFechaHoy();
+
+    let citasHoy = citas
+        .filter(cita => cita.fecha === fechaHoy && cita.estado !== "Cancelada")
+        .sort((a, b) => {
+            let fechaA = crearFechaHora(a.fecha, a.horaInicio);
+            let fechaB = crearFechaHora(b.fecha, b.horaInicio);
+            return fechaA - fechaB;
+        });
+
+    if (citasHoy.length === 0) {
+        contenedor.innerHTML = `
+            <div class="disponible">
+                Hoy no hay citas agendadas.
+            </div>
+        `;
+        return;
+    }
+
+    let html = `<h3>Agenda de hoy ${formatearFecha(fechaHoy)}</h3>`;
+
+    citasHoy.forEach(cita => {
+        html += `
+            <div class="hoy-card">
+                <p><strong>Cliente:</strong> ${cita.cliente}</p>
+                <p><strong>Servicio:</strong> ${cita.servicio}</p>
+                <p><strong>Horario:</strong> ${cita.horaInicio} - ${cita.horaFin}</p>
+                <p><strong>Valor:</strong> $${Number(cita.precio).toLocaleString("es-CO")}</p>
+                <p><strong>Estado:</strong> ${mostrarTextoEstado(cita.estado)}</p>
+            </div>
+        `;
+    });
+
+    contenedor.innerHTML = html;
+}
+
 function mostrarCalendario() {
     let fechaSeleccionada = document.getElementById("fechaCalendario").value;
     let resultado = document.getElementById("resultadoCalendario");
@@ -400,6 +449,10 @@ function mostrarCitas() {
 
     if (document.getElementById("fechaCalendario")) {
         mostrarCalendario();
+    }
+
+    if (document.getElementById("listaCitasHoy")) {
+        mostrarCitasHoy();
     }
 }
 

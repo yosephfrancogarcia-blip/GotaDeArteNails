@@ -1,6 +1,7 @@
 let citas = JSON.parse(localStorage.getItem("citas")) || [];
 let editando = false;
 let idCitaEditando = null;
+let filtroFechaActual = "todas";
 
 function guardarCita() {
     if (editando) {
@@ -92,10 +93,7 @@ function editarCita(index) {
     document.getElementById("btnGuardar").textContent = "Actualizar cita";
     document.getElementById("btnCancelar").style.display = "block";
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function actualizarCita() {
@@ -171,13 +169,22 @@ function crearFechaHora(fecha, hora) {
     let partesFecha = fecha.split("-");
     let partesHora = hora.split(":");
 
-    let anio = Number(partesFecha[0]);
-    let mes = Number(partesFecha[1]) - 1;
-    let dia = Number(partesFecha[2]);
-    let horas = Number(partesHora[0]);
-    let minutos = Number(partesHora[1]);
+    return new Date(
+        Number(partesFecha[0]),
+        Number(partesFecha[1]) - 1,
+        Number(partesFecha[2]),
+        Number(partesHora[0]),
+        Number(partesHora[1]),
+        0
+    );
+}
 
-    return new Date(anio, mes, dia, horas, minutos, 0);
+function obtenerFechaHoy() {
+    let hoy = new Date();
+    let anio = hoy.getFullYear();
+    let mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    let dia = String(hoy.getDate()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}`;
 }
 
 function actualizarEstadosAutomaticos() {
@@ -193,11 +200,7 @@ function actualizarEstadosAutomaticos() {
             cita.estado !== "Terminada"
         ) {
             huboCambio = true;
-
-            return {
-                ...cita,
-                estado: "Terminada"
-            };
+            return { ...cita, estado: "Terminada" };
         }
 
         return cita;
@@ -223,9 +226,7 @@ function revisarRecordatoriosAutomaticos() {
             cita.recordatorioEnviado !== true
         ) {
             alert(`Recordatorio automático: falta una hora o menos para la cita de ${cita.cliente}. Se abrirá WhatsApp con el mensaje listo.`);
-
             enviarRecordatorio(index);
-
             citas[index].recordatorioEnviado = true;
             huboCambio = true;
         }
@@ -246,20 +247,7 @@ function mostrarTextoEstado(estado) {
 }
 
 function claseEstado(estado) {
-    if (estado === "Terminada") {
-        return "Terminada";
-    }
-
     return estado;
-}
-
-function obtenerFechaHoy() {
-    let hoy = new Date();
-    let anio = hoy.getFullYear();
-    let mes = String(hoy.getMonth() + 1).padStart(2, "0");
-    let dia = String(hoy.getDate()).padStart(2, "0");
-
-    return `${anio}-${mes}-${dia}`;
 }
 
 function mostrarCitasHoy() {
@@ -270,18 +258,10 @@ function mostrarCitasHoy() {
 
     let citasHoy = citas
         .filter(cita => cita.fecha === fechaHoy && cita.estado !== "Cancelada")
-        .sort((a, b) => {
-            let fechaA = crearFechaHora(a.fecha, a.horaInicio);
-            let fechaB = crearFechaHora(b.fecha, b.horaInicio);
-            return fechaA - fechaB;
-        });
+        .sort((a, b) => crearFechaHora(a.fecha, a.horaInicio) - crearFechaHora(b.fecha, b.horaInicio));
 
     if (citasHoy.length === 0) {
-        contenedor.innerHTML = `
-            <div class="disponible">
-                Hoy no hay citas agendadas.
-            </div>
-        `;
+        contenedor.innerHTML = `<div class="disponible">Hoy no hay citas agendadas.</div>`;
         return;
     }
 
@@ -315,11 +295,7 @@ function mostrarCalendario() {
 
     let citasDelDia = citas
         .filter(cita => cita.fecha === fechaSeleccionada && cita.estado !== "Cancelada")
-        .sort((a, b) => {
-            let fechaA = crearFechaHora(a.fecha, a.horaInicio);
-            let fechaB = crearFechaHora(b.fecha, b.horaInicio);
-            return fechaA - fechaB;
-        });
+        .sort((a, b) => crearFechaHora(a.fecha, a.horaInicio) - crearFechaHora(b.fecha, b.horaInicio));
 
     if (citasDelDia.length === 0) {
         resultado.innerHTML = `
@@ -343,13 +319,97 @@ function mostrarCalendario() {
         `;
     });
 
-    html += `
-        <div class="horario-libre">
-            Los espacios que no estén dentro de estos rangos están disponibles.
-        </div>
-    `;
+    html += `<div class="horario-libre">Los espacios que no estén dentro de estos rangos están disponibles.</div>`;
 
     resultado.innerHTML = html;
+}
+
+function actualizarResumenGanancias() {
+    let hoy = obtenerFechaHoy();
+    let ahora = new Date();
+
+    let totalHoy = 0;
+    let totalSemana = 0;
+    let totalMes = 0;
+
+    let pendientes = 0;
+    let confirmadas = 0;
+    let terminadas = 0;
+    let canceladas = 0;
+
+    citas.forEach(cita => {
+        if (cita.estado === "Pendiente") pendientes++;
+        if (cita.estado === "Confirmada") confirmadas++;
+        if (cita.estado === "Terminada") terminadas++;
+        if (cita.estado === "Cancelada") canceladas++;
+
+        if (cita.estado === "Terminada") {
+            let fechaCita = crearFechaHora(cita.fecha, cita.horaInicio);
+            let diferenciaDias = Math.floor((ahora - fechaCita) / (1000 * 60 * 60 * 24));
+
+            if (cita.fecha === hoy) {
+                totalHoy += Number(cita.precio);
+            }
+
+            if (diferenciaDias >= 0 && diferenciaDias <= 7) {
+                totalSemana += Number(cita.precio);
+            }
+
+            if (
+                fechaCita.getMonth() === ahora.getMonth() &&
+                fechaCita.getFullYear() === ahora.getFullYear()
+            ) {
+                totalMes += Number(cita.precio);
+            }
+        }
+    });
+
+    document.getElementById("gananciaHoy").textContent = "$" + totalHoy.toLocaleString("es-CO");
+    document.getElementById("gananciaSemana").textContent = "$" + totalSemana.toLocaleString("es-CO");
+    document.getElementById("gananciaMes").textContent = "$" + totalMes.toLocaleString("es-CO");
+
+    document.getElementById("citasTerminadas").textContent = terminadas;
+    document.getElementById("citasConfirmadas").textContent = confirmadas;
+    document.getElementById("citasCanceladas").textContent = canceladas;
+}
+
+function aplicarFiltroFecha(tipo) {
+    filtroFechaActual = tipo;
+    mostrarCitas();
+}
+
+function coincideFiltroFecha(cita) {
+    if (filtroFechaActual === "todas") return true;
+
+    let hoy = new Date();
+    let fechaCita = crearFechaHora(cita.fecha, cita.horaInicio);
+
+    let inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    let manana = new Date(inicioHoy);
+    manana.setDate(manana.getDate() + 1);
+
+    if (filtroFechaActual === "hoy") {
+        return cita.fecha === obtenerFechaHoy();
+    }
+
+    if (filtroFechaActual === "manana") {
+        let anio = manana.getFullYear();
+        let mes = String(manana.getMonth() + 1).padStart(2, "0");
+        let dia = String(manana.getDate()).padStart(2, "0");
+        return cita.fecha === `${anio}-${mes}-${dia}`;
+    }
+
+    if (filtroFechaActual === "semana") {
+        let finSemana = new Date(inicioHoy);
+        finSemana.setDate(finSemana.getDate() + 7);
+        return fechaCita >= inicioHoy && fechaCita <= finSemana;
+    }
+
+    if (filtroFechaActual === "mes") {
+        return fechaCita.getMonth() === hoy.getMonth() && fechaCita.getFullYear() === hoy.getFullYear();
+    }
+
+    return true;
 }
 
 function mostrarCitas() {
@@ -374,10 +434,10 @@ function mostrarCitas() {
     totalGeneral.textContent = "$" + sumaTotalTerminadas.toLocaleString("es-CO");
     totalCitas.textContent = citas.length;
 
+    actualizarResumenGanancias();
+
     let citasOrdenadas = [...citas].sort((a, b) => {
-        let fechaA = crearFechaHora(a.fecha, a.horaInicio);
-        let fechaB = crearFechaHora(b.fecha, b.horaInicio);
-        return fechaA - fechaB;
+        return crearFechaHora(a.fecha, a.horaInicio) - crearFechaHora(b.fecha, b.horaInicio);
     });
 
     let citasFiltradas = citasOrdenadas.filter(cita => {
@@ -391,7 +451,7 @@ function mostrarCitas() {
 
         let coincideEstado = filtroEstado === "Todas" || cita.estado === filtroEstado;
 
-        return coincideBusqueda && coincideEstado;
+        return coincideBusqueda && coincideEstado && coincideFiltroFecha(cita);
     });
 
     if (citasFiltradas.length === 0) {
@@ -418,8 +478,28 @@ function mostrarCitas() {
                 `;
             }
 
+            let botonConfirmar = "";
+
+            if (cita.estado === "Pendiente") {
+                botonConfirmar = `
+                    <button class="btn-confirmar" onclick="confirmarCitaWhatsApp(${indexReal})">
+                        Confirmar cita por WhatsApp
+                    </button>
+                `;
+            }
+
+            let botonCancelar = "";
+
+            if (cita.estado === "Pendiente" || cita.estado === "Confirmada") {
+                botonCancelar = `
+                    <button class="btn-cancelar-whatsapp" onclick="cancelarCitaWhatsApp(${indexReal})">
+                        Cancelar cita por WhatsApp
+                    </button>
+                `;
+            }
+
             lista.innerHTML += `
-                <div class="cita">
+                <div class="cita cita-${cita.estado}">
                     <div class="cita-header">
                         <h3>${cita.cliente}</h3>
                         <span class="badge ${claseEstado(cita.estado)}">${mostrarTextoEstado(cita.estado)}</span>
@@ -434,6 +514,8 @@ function mostrarCitas() {
                     ${textoRecordatorio}
 
                     ${botonWhatsApp}
+                    ${botonConfirmar}
+                    ${botonCancelar}
 
                     <button class="btn-editar" onclick="editarCita(${indexReal})">
                         Editar cita
@@ -447,13 +529,19 @@ function mostrarCitas() {
         });
     }
 
-    if (document.getElementById("fechaCalendario")) {
-        mostrarCalendario();
+    if (document.getElementById("fechaCalendario")) mostrarCalendario();
+    if (document.getElementById("listaCitasHoy")) mostrarCitasHoy();
+}
+
+function abrirWhatsApp(telefono, mensaje) {
+    let numero = telefono.replace(/\D/g, "");
+
+    if (numero.length === 10) {
+        numero = "57" + numero;
     }
 
-    if (document.getElementById("listaCitasHoy")) {
-        mostrarCitasHoy();
-    }
+    let url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank");
 }
 
 function enviarRecordatorio(index) {
@@ -473,20 +561,131 @@ Te recordamos tu cita en Gota de Arte Nails.
 ⏳ Hora fin del servicio: ${cita.horaFin}
 💖 Servicio: ${cita.servicio}
 💰 Valor: $${Number(cita.precio).toLocaleString("es-CO")}
-📌 Estado: ${mostrarTextoEstado(cita.estado)}
 
 Por favor confirma tu asistencia respondiendo a este mensaje.
 ¡Te esperamos para consentir tus uñas con mucho arte! 🌸`;
 
-    let telefono = cita.telefono.replace(/\D/g, "");
+    abrirWhatsApp(cita.telefono, mensaje);
+}
 
-    if (telefono.length === 10) {
-        telefono = "57" + telefono;
+function confirmarCitaWhatsApp(index) {
+    citas[index].estado = "Confirmada";
+    citas[index].recordatorioEnviado = false;
+    guardarDatos();
+    mostrarCitas();
+
+    let cita = citas[index];
+
+    let mensaje = `Hola, ${cita.cliente} 💅✨
+
+Tu cita en Gota de Arte Nails ha sido confirmada.
+
+📅 Fecha: ${formatearFecha(cita.fecha)}
+🕒 Hora: ${cita.horaInicio}
+💖 Servicio: ${cita.servicio}
+💰 Valor: $${Number(cita.precio).toLocaleString("es-CO")}
+
+¡Te esperamos! 🌸`;
+
+    abrirWhatsApp(cita.telefono, mensaje);
+}
+
+function cancelarCitaWhatsApp(index) {
+    let confirmar = confirm("¿Deseas cancelar esta cita y enviar aviso por WhatsApp?");
+
+    if (!confirmar) return;
+
+    citas[index].estado = "Cancelada";
+    guardarDatos();
+    mostrarCitas();
+
+    let cita = citas[index];
+
+    let mensaje = `Hola, ${cita.cliente}.
+
+Te informamos que tu cita en Gota de Arte Nails ha sido cancelada.
+
+📅 Fecha: ${formatearFecha(cita.fecha)}
+🕒 Hora: ${cita.horaInicio}
+💖 Servicio: ${cita.servicio}
+
+Puedes escribirnos para reagendar una nueva cita.`;
+
+    abrirWhatsApp(cita.telefono, mensaje);
+}
+
+function exportarExcel() {
+    if (citas.length === 0) {
+        alert("No hay citas para exportar.");
+        return;
     }
 
-    let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    let filas = [
+        ["Cliente", "Teléfono", "Servicio", "Fecha", "Hora inicio", "Hora fin", "Valor", "Estado"]
+    ];
 
-    window.open(url, "_blank");
+    citas.forEach(cita => {
+        filas.push([
+            cita.cliente,
+            cita.telefono,
+            cita.servicio,
+            formatearFecha(cita.fecha),
+            cita.horaInicio,
+            cita.horaFin,
+            cita.precio,
+            mostrarTextoEstado(cita.estado)
+        ]);
+    });
+
+    let contenido = filas.map(fila => fila.join(";")).join("\n");
+    let blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+
+    let enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = "historial_gota_de_arte_nails.csv";
+    enlace.click();
+}
+
+function descargarBackup() {
+    let datos = JSON.stringify(citas, null, 2);
+    let blob = new Blob([datos], { type: "application/json" });
+
+    let enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = "backup_gota_de_arte_nails.json";
+    enlace.click();
+}
+
+function restaurarBackup(event) {
+    let archivo = event.target.files[0];
+
+    if (!archivo) return;
+
+    let lector = new FileReader();
+
+    lector.onload = function(e) {
+        try {
+            let datos = JSON.parse(e.target.result);
+
+            if (!Array.isArray(datos)) {
+                alert("El archivo no es válido.");
+                return;
+            }
+
+            let confirmar = confirm("¿Deseas restaurar esta copia de seguridad? Se reemplazará el historial actual.");
+
+            if (confirmar) {
+                citas = datos;
+                guardarDatos();
+                mostrarCitas();
+                alert("Copia de seguridad restaurada correctamente.");
+            }
+        } catch (error) {
+            alert("No se pudo leer el archivo de copia de seguridad.");
+        }
+    };
+
+    lector.readAsText(archivo);
 }
 
 function eliminarCita(index) {

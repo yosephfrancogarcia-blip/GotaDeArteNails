@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="style.css">
 
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon.svg">
+    <link rel="icon" href="icon-512.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
     <meta name="theme-color" content="#c2185b">
     <meta name="apple-mobile-web-app-title" content="Gota de Arte Nails">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,7 +24,7 @@
             <div class="logo">💅</div>
             <div>
                 <h1>Gota de Arte Nails</h1>
-                <p>Agenda, clientes y recordatorios</p>
+                <p>Agenda, clientes, ganancias y recordatorios</p>
             </div>
         </section>
 
@@ -100,6 +102,45 @@
 
         <section class="card">
             <div class="section-title">
+                <h2>Resumen de ganancias</h2>
+                <span>Negocio</span>
+            </div>
+
+            <div class="resumen-grid">
+                <div class="resumen-card">
+                    <span>Hoy</span>
+                    <strong id="gananciaHoy">$0</strong>
+                </div>
+
+                <div class="resumen-card">
+                    <span>Semana</span>
+                    <strong id="gananciaSemana">$0</strong>
+                </div>
+
+                <div class="resumen-card">
+                    <span>Mes</span>
+                    <strong id="gananciaMes">$0</strong>
+                </div>
+
+                <div class="resumen-card">
+                    <span>Terminadas</span>
+                    <strong id="citasTerminadas">0</strong>
+                </div>
+
+                <div class="resumen-card">
+                    <span>Confirmadas</span>
+                    <strong id="citasConfirmadas">0</strong>
+                </div>
+
+                <div class="resumen-card">
+                    <span>Canceladas</span>
+                    <strong id="citasCanceladas">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-title">
                 <h2>Citas de hoy</h2>
                 <span>Hoy</span>
             </div>
@@ -149,7 +190,26 @@
                 <option value="Cancelada">Canceladas</option>
             </select>
 
+            <div class="filtros-fecha">
+                <button onclick="aplicarFiltroFecha('todas')">Todas</button>
+                <button onclick="aplicarFiltroFecha('hoy')">Hoy</button>
+                <button onclick="aplicarFiltroFecha('manana')">Mañana</button>
+                <button onclick="aplicarFiltroFecha('semana')">Semana</button>
+                <button onclick="aplicarFiltroFecha('mes')">Mes</button>
+            </div>
+
             <div id="listaCitas"></div>
+
+            <button class="btn-exportar" onclick="exportarExcel()">
+                Exportar historial a Excel
+            </button>
+
+            <button class="btn-backup" onclick="descargarBackup()">
+                Descargar copia de seguridad
+            </button>
+
+            <label class="label-backup">Restaurar copia de seguridad</label>
+            <input type="file" id="archivoBackup" accept=".json" onchange="restaurarBackup(event)">
 
             <button class="btn-clear" onclick="eliminarTodasLasCitas()">
                 Limpiar historial completo

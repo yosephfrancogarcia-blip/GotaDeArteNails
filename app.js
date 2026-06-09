@@ -219,14 +219,17 @@ function revisarRecordatoriosAutomaticos() {
         let fechaHoraInicio = crearFechaHora(cita.fecha, cita.horaInicio);
         let diferenciaMinutos = (fechaHoraInicio - ahora) / 60000;
 
+        // 1440 minutos = 24 horas = 1 día antes
         if (
-            diferenciaMinutos <= 60 &&
+            diferenciaMinutos <= 1440 &&
             diferenciaMinutos > 0 &&
             cita.estado === "Confirmada" &&
             cita.recordatorioEnviado !== true
         ) {
-            alert(`Recordatorio automático: falta una hora o menos para la cita de ${cita.cliente}. Se abrirá WhatsApp con el mensaje listo.`);
+            alert(`Recordatorio automático: falta 1 día o menos para la cita de ${cita.cliente}. Se abrirá WhatsApp con el mensaje listo.`);
+
             enviarRecordatorio(index);
+
             citas[index].recordatorioEnviado = true;
             huboCambio = true;
         }
@@ -465,7 +468,7 @@ function mostrarCitas() {
             if (cita.estado === "Confirmada") {
                 textoRecordatorio = cita.recordatorioEnviado
                     ? `<div class="recordatorio-info">Recordatorio enviado o abierto en WhatsApp</div>`
-                    : `<div class="recordatorio-info">Recordatorio pendiente: se activa 1 hora antes</div>`;
+                    : `<div class="recordatorio-info">Recordatorio pendiente: se activa 1 día antes</div>`;
             }
 
             let botonWhatsApp = "";

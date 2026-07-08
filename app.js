@@ -1,4 +1,5 @@
 let citas = JSON.parse(localStorage.getItem("citas")) || [];
+let caja = JSON.parse(localStorage.getItem("caja")) || [];
 let editando = false;
 let idCitaEditando = null;
 let filtroFechaActual = "todas";
@@ -12,43 +13,48 @@ function guardarCita() {
 }
 
 function registrarCita() {
+
     let cliente = document.getElementById("cliente").value.trim();
     let telefono = document.getElementById("telefono").value.trim();
     let servicio = document.getElementById("servicio").value;
     let fecha = document.getElementById("fecha").value;
     let horaInicio = document.getElementById("horaInicio").value;
     let horaFin = document.getElementById("horaFin").value;
-    let precio = document.getElementById("precio").value;
+    let precio = Number(document.getElementById("precio").value);
     let estado = document.getElementById("estado").value;
 
-    if (cliente === "" || telefono === "" || servicio === "" || fecha === "" || horaInicio === "" || horaFin === "" || precio === "") {
-        alert("Por favor complete todos los campos.");
+    if (
+        cliente === "" ||
+        telefono === "" ||
+        servicio === "" ||
+        fecha === "" ||
+        horaInicio === "" ||
+        horaFin === "" ||
+        precio <= 0
+    ) {
+        alert("Complete todos los campos.");
         return;
     }
 
     if (horaFin <= horaInicio) {
-        alert("La hora fin del servicio debe ser mayor que la hora de inicio.");
-        return;
-    }
-
-    if (Number(precio) <= 0) {
-        alert("El valor del servicio debe ser mayor que cero.");
+        alert("La hora final debe ser mayor que la inicial.");
         return;
     }
 
     let cruceHorario = citas.some(cita => {
-        return cita.fecha === fecha &&
-               cita.estado !== "Cancelada" &&
-               cita.estado !== "Terminada" &&
-               (
-                    (horaInicio >= cita.horaInicio && horaInicio < cita.horaFin) ||
-                    (horaFin > cita.horaInicio && horaFin <= cita.horaFin) ||
-                    (horaInicio <= cita.horaInicio && horaFin >= cita.horaFin)
-               );
+        return (
+            cita.fecha === fecha &&
+            cita.estado !== "Cancelada" &&
+            (
+                (horaInicio >= cita.horaInicio && horaInicio < cita.horaFin) ||
+                (horaFin > cita.horaInicio && horaFin <= cita.horaFin) ||
+                (horaInicio <= cita.horaInicio && horaFin >= cita.horaFin)
+            )
+        );
     });
 
     if (cruceHorario) {
-        alert("Ya existe una cita en ese rango de horario. Por favor selecciona otra hora.");
+        alert("Ya existe una cita en ese horario.");
         return;
     }
 
@@ -60,21 +66,39 @@ function registrarCita() {
         fecha,
         horaInicio,
         horaFin,
-        precio: Number(precio),
+        precio,
         estado,
         recordatorioEnviado: false
     };
 
-    citas.push(cita);
-    guardarDatos();
+    if (estado === "Terminada") {
+
+        caja.push({
+            id: Date.now(),
+            cliente,
+            servicio,
+            fecha,
+            precio
+        });
+
+        localStorage.setItem("caja", JSON.stringify(caja));
+
+    } else {
+
+        citas.push(cita);
+        guardarDatos();
+
+    }
 
     limpiarFormulario();
     mostrarCitas();
 
     alert("Cita registrada correctamente.");
+
 }
 
-function editarCita(index) {
+  function editarCita(index) {
+
     let cita = citas[index];
 
     document.getElementById("cliente").value = cita.cliente;
@@ -93,9 +117,12 @@ function editarCita(index) {
     document.getElementById("btnGuardar").textContent = "Actualizar cita";
     document.getElementById("btnCancelar").style.display = "block";
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 
+}
 function actualizarCita() {
     let cliente = document.getElementById("cliente").value.trim();
     let telefono = document.getElementById("telefono").value.trim();
@@ -188,10 +215,12 @@ function obtenerFechaHoy() {
 }
 
 function actualizarEstadosAutomaticos() {
+
     let ahora = new Date();
     let huboCambio = false;
 
-    citas = citas.map(cita => {
+    citas = citas.filter(cita => {
+
         let fechaHoraFin = crearFechaHora(cita.fecha, cita.horaFin);
 
         if (
@@ -199,16 +228,30 @@ function actualizarEstadosAutomaticos() {
             cita.estado !== "Cancelada" &&
             cita.estado !== "Terminada"
         ) {
+
+            caja.push({
+                id: Date.now(),
+                cliente: cita.cliente,
+                servicio: cita.servicio,
+                fecha: cita.fecha,
+                precio: Number(cita.precio)
+            });
+
+            localStorage.setItem("caja", JSON.stringify(caja));
+
             huboCambio = true;
-            return { ...cita, estado: "Terminada" };
+
+            return false; // elimina la cita de la agenda
         }
 
-        return cita;
+        return true;
+
     });
 
     if (huboCambio) {
         guardarDatos();
     }
+
 }
 
 function revisarRecordatoriosAutomaticos() {
@@ -328,6 +371,7 @@ function mostrarCalendario() {
 }
 
 function actualizarResumenGanancias() {
+
     let hoy = obtenerFechaHoy();
     let ahora = new Date();
 
@@ -335,46 +379,100 @@ function actualizarResumenGanancias() {
     let totalSemana = 0;
     let totalMes = 0;
 
-    let pendientes = 0;
-    let confirmadas = 0;
-    let terminadas = 0;
-    let canceladas = 0;
+    let gananciasMeses = {};
 
-    citas.forEach(cita => {
-        if (cita.estado === "Pendiente") pendientes++;
-        if (cita.estado === "Confirmada") confirmadas++;
-        if (cita.estado === "Terminada") terminadas++;
-        if (cita.estado === "Cancelada") canceladas++;
+    caja.forEach(cita => {
 
-        if (cita.estado === "Terminada") {
-            let fechaCita = crearFechaHora(cita.fecha, cita.horaInicio);
-            let diferenciaDias = Math.floor((ahora - fechaCita) / (1000 * 60 * 60 * 24));
+        let fechaCita = new Date(cita.fecha + "T00:00:00");
 
-            if (cita.fecha === hoy) {
-                totalHoy += Number(cita.precio);
-            }
+        let diferenciaDias = Math.floor(
+            (ahora - fechaCita) / (1000 * 60 * 60 * 24)
+        );
 
-            if (diferenciaDias >= 0 && diferenciaDias <= 7) {
-                totalSemana += Number(cita.precio);
-            }
-
-            if (
-                fechaCita.getMonth() === ahora.getMonth() &&
-                fechaCita.getFullYear() === ahora.getFullYear()
-            ) {
-                totalMes += Number(cita.precio);
-            }
+        if (cita.fecha === hoy) {
+            totalHoy += Number(cita.precio);
         }
+
+        if (diferenciaDias >= 0 && diferenciaDias <= 7) {
+            totalSemana += Number(cita.precio);
+        }
+
+        if (
+            fechaCita.getMonth() === ahora.getMonth() &&
+            fechaCita.getFullYear() === ahora.getFullYear()
+        ) {
+            totalMes += Number(cita.precio);
+        }
+
+        let mes =
+            fechaCita.getFullYear() +
+            "-" +
+            String(fechaCita.getMonth() + 1).padStart(2, "0");
+
+        if (!gananciasMeses[mes]) {
+            gananciasMeses[mes] = 0;
+        }
+
+        gananciasMeses[mes] += Number(cita.precio);
+
     });
+
+    document.getElementById("gananciaHoy").textContent =
+        "$" + totalHoy.toLocaleString("es-CO");
+
+    document.getElementById("gananciaSemana").textContent =
+        "$" + totalSemana.toLocaleString("es-CO");
+
+    document.getElementById("gananciaMes").textContent =
+        "$" + totalMes.toLocaleString("es-CO");
+
+    let htmlMeses = "";
+
+    Object.keys(gananciasMeses)
+        .sort()
+        .reverse()
+        .forEach(mes => {
+
+            htmlMeses += `
+                <div class="resumen-card">
+                    <span>${mes}</span>
+                    <strong>$${gananciasMeses[mes].toLocaleString("es-CO")}</strong>
+                </div>
+            `;
+
+        });
+
+    document.getElementById("gananciasMeses").innerHTML = htmlMeses;
+
+    let pendientes = citas.filter(c => c.estado === "Pendiente").length;
+    let confirmadas = citas.filter(c => c.estado === "Confirmada").length;
+    let canceladas = citas.filter(c => c.estado === "Cancelada").length;
+
+    document.getElementById("citasTerminadas").textContent = caja.length;
+    document.getElementById("citasConfirmadas").textContent = confirmadas;
+    document.getElementById("citasCanceladas").textContent = canceladas;
+
+}
 
     document.getElementById("gananciaHoy").textContent = "$" + totalHoy.toLocaleString("es-CO");
     document.getElementById("gananciaSemana").textContent = "$" + totalSemana.toLocaleString("es-CO");
     document.getElementById("gananciaMes").textContent = "$" + totalMes.toLocaleString("es-CO");
+let htmlMeses = "";
 
-    document.getElementById("citasTerminadas").textContent = terminadas;
-    document.getElementById("citasConfirmadas").textContent = confirmadas;
-    document.getElementById("citasCanceladas").textContent = canceladas;
-}
+Object.keys(gananciasMeses)
+    .sort()
+    .reverse()
+    .forEach(mes => {
+
+        htmlMeses += `
+            <div class="resumen-card">
+                <span>${mes}</span>
+                <strong>$${gananciasMeses[mes].toLocaleString("es-CO")}</strong>
+            </div>
+        `;
+
+    });
+
 
 function aplicarFiltroFecha(tipo) {
     filtroFechaActual = tipo;
@@ -426,15 +524,13 @@ function mostrarCitas() {
 
     lista.innerHTML = "";
 
-    let sumaTotalTerminadas = 0;
+    let sumaTotal = 0;
 
-    citas.forEach(cita => {
-        if (cita.estado === "Terminada") {
-            sumaTotalTerminadas += Number(cita.precio);
-        }
-    });
+caja.forEach(cita => {
+    sumaTotal += Number(cita.precio);
+});
 
-    totalGeneral.textContent = "$" + sumaTotalTerminadas.toLocaleString("es-CO");
+totalGeneral.textContent = "$" + sumaTotal.toLocaleString("es-CO");
     totalCitas.textContent = citas.length;
 
     actualizarResumenGanancias();
